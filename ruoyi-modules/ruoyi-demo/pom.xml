@@ -98,10 +98,10 @@
             <artifactId>ruoyi-common-tenant</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.dromara</groupId>
-            <artifactId>ruoyi-common-websocket</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.dromara</groupId>-->
+<!--            <artifactId>ruoyi-common-websocket</artifactId>-->
+<!--        </dependency>-->
 
     </dependencies>
 

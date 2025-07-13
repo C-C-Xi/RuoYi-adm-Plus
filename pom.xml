@@ -59,6 +59,7 @@
         <flatten-maven-plugin.version>1.3.0</flatten-maven-plugin.version>
         <!-- 打包默认跳过测试 -->
         <skipTests>true</skipTests>
+        <mongodb-driver-sync.version>5.5.1</mongodb-driver-sync.version>
     </properties>
 
     <profiles>
@@ -350,14 +351,30 @@
                 <artifactId>ruoyi-demo</artifactId>
                 <version>${revision}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-common-mongo</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <!--  工作流模块  -->
             <dependency>
                 <groupId>org.dromara</groupId>
                 <artifactId>ruoyi-workflow</artifactId>
                 <version>${revision}</version>
             </dependency>
-
+            <!--  主业务模块  -->
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-game</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongodb-driver-bom</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+                <version>${mongodb-driver-sync.version}</version> <!-- 请根据需要选择版本 -->
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
