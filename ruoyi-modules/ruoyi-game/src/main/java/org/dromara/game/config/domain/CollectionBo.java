@@ -1,6 +1,5 @@
-package org.dromara.game.domain;
+package org.dromara.game.config.domain;
 
-import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;

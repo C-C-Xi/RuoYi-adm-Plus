@@ -1,8 +1,8 @@
-package org.dromara.game.controller;
+package org.dromara.game.config.controller;
 
 import org.dromara.common.core.domain.R;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.game.domain.CollectionBo;
+import org.dromara.game.config.domain.CollectionBo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
