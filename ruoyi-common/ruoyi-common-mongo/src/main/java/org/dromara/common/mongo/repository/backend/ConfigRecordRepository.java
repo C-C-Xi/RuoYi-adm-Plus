@@ -1,4 +1,4 @@
-package org.dromara.common.mongo.repository;
+package org.dromara.common.mongo.repository.backend;
 
 import org.dromara.common.mongo.model.backend.ConfigRecord;
 import org.springframework.data.domain.Pageable;

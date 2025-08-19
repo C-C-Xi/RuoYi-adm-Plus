@@ -1,4 +1,4 @@
-package org.dromara.common.mongo.repository;
+package org.dromara.common.mongo.repository.toGameConfig;
 
 import org.dromara.common.mongo.model.toGameConfig.ConfigSchema;
 import org.springframework.data.mongodb.repository.MongoRepository;

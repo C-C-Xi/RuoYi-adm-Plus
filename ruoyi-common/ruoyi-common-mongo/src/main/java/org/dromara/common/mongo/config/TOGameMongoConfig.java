@@ -11,8 +11,13 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
+@EnableMongoRepositories(
+        basePackages = "org.dromara.common.mongo.repository.toGame",
+        mongoTemplateRef = "toGameMongoTemplate"
+)
 public class TOGameMongoConfig {
     @Value("${spring.data.mongodb.TOGame.uri}")
     private String toGameUri;

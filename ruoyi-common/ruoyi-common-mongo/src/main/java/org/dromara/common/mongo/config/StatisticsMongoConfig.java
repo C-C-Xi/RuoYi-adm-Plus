@@ -11,10 +11,15 @@ import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import java.util.List;
 
 @Configuration
+@EnableMongoRepositories(
+        basePackages = "org.dromara.common.mongo.repository.statitics",
+        mongoTemplateRef = "toGameMongoTemplate"
+)
 public class StatisticsMongoConfig {
     @Value("${spring.data.mongodb.Statistics.uri}")
     private String statisticsUri;

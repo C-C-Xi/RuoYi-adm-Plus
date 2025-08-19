@@ -3,8 +3,8 @@ package org.dromara.game.config.service;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.mongo.model.backend.SchemaHistory;
 import org.dromara.common.mongo.model.toGameConfig.ConfigSchema;
-import org.dromara.common.mongo.repository.ConfigSchemaRepository;
-import org.dromara.common.mongo.repository.SchemaHistoryRepository;
+import org.dromara.common.mongo.repository.toGameConfig.ConfigSchemaRepository;
+import org.dromara.common.mongo.repository.backend.SchemaHistoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
