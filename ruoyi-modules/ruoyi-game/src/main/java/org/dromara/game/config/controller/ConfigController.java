@@ -1,8 +1,10 @@
 package org.dromara.game.config.controller;
 
+import org.bson.Document;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.game.config.domain.CollectionBo;
+import org.dromara.game.config.domain.bo.SchemaColumnBo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -27,8 +29,10 @@ public class ConfigController {
 
     // 获取所有配置表列表
     @GetMapping("/collections")
-    public R<Set<String>> listCollections() {
-        return R.ok(toGameConfigMongoTemplate.getCollectionNames());
+    public R<List<Map>> listCollections() {
+        Query query=new Query();
+        List<Map> collections = toGameConfigMongoTemplate.find(query,Map.class, "config_schema");
+        return R.ok(collections);
     }
 
     /**
@@ -71,6 +75,27 @@ public class ConfigController {
         Query query = Query.query(Criteria.where("collection").is(collection));
         Update update = new Update().set("columns", columns);
         toGameConfigMongoTemplate.updateFirst(query, update, "config_schema");
+        return R.ok();
+    }
+    @PostMapping("/schema/column/{collection}")
+    public R addSchemaColumn(@PathVariable String collection, @RequestBody SchemaColumnBo schemaColumn ) {
+        Query query = Query.query(Criteria.where("collection").is(collection));
+        Update update = new Update().push("columns", schemaColumn);
+        toGameConfigMongoTemplate.updateFirst(query, update, collection);
+        return R.ok();
+    }
+    @PutMapping("/schema/column/{collection}/{index}")
+    public R updateSchemaColumn(@PathVariable String collection,@PathVariable String index, @RequestBody SchemaColumnBo schemaColumn) {
+        Query query = Query.query(Criteria.where("collection").is(collection));
+        Update update = new Update().set( "columns." + index, schemaColumn);
+        toGameConfigMongoTemplate.updateFirst(query, update, collection);
+        return R.ok();
+    }
+    @DeleteMapping("/schema/column/{collection}/{fieldName}")
+    public R deleteSchemaColumn(@PathVariable String collection,@PathVariable String fieldName) {
+        Query query = Query.query(Criteria.where("collection").is(collection));
+        Update update = new Update().pull("columns", Document.parse("{ 'fieldName': '".concat(fieldName).concat("' }")));
+        toGameConfigMongoTemplate.updateFirst(query, update, collection);
         return R.ok();
     }
 
