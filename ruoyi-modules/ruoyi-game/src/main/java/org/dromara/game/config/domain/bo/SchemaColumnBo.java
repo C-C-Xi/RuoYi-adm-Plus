@@ -10,6 +10,7 @@ public class SchemaColumnBo {
     private String fieldName;
     private String component;
     private boolean  required;
+    private String  dataType;
     private List<Options> options;
     @Data
     class Options {

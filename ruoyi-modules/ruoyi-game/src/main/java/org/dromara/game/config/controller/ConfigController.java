@@ -11,8 +11,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.core.query.UpdateDefinition;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +24,7 @@ import static org.dromara.common.core.domain.R.ok;
 @RestController
 @RequestMapping("/api/config")
 public class ConfigController {
-
+    private static final String COLLECTION_NAME = "config_schema";
     @Autowired
     @Qualifier("toGameConfigMongoTemplate")
     private MongoTemplate toGameConfigMongoTemplate;
@@ -31,7 +33,7 @@ public class ConfigController {
     @GetMapping("/collections")
     public R<List<Map>> listCollections() {
         Query query=new Query();
-        List<Map> collections = toGameConfigMongoTemplate.find(query,Map.class, "config_schema");
+        List<Map> collections = toGameConfigMongoTemplate.find(query,Map.class, COLLECTION_NAME);
         return R.ok(collections);
     }
 
@@ -50,14 +52,14 @@ public class ConfigController {
         }
         query.skip((pageQuery.getPageNum() - 1)*pageQuery.getPageSize());
         query.limit(pageQuery.getPageSize());
-        List<Map> collections = toGameConfigMongoTemplate.find(query,Map.class, "config_schema");
+        List<Map> collections = toGameConfigMongoTemplate.find(query,Map.class, COLLECTION_NAME);
         return R.ok(collections);
     }
 
     // 创建一个新的配置表（仅注册 schema）
     @PostMapping("/schema/create")
     public R createSchema(@RequestBody Map<String, Object> schema) {
-        toGameConfigMongoTemplate.insert(schema, "config_schema");
+        toGameConfigMongoTemplate.insert(schema, COLLECTION_NAME);
         return R.ok();
     }
 
@@ -65,7 +67,7 @@ public class ConfigController {
     @PostMapping("/schema/delete")
     public R deleteSchema(@RequestBody String collection) {
         Query query = Query.query(Criteria.where("collection").is(collection));
-        toGameConfigMongoTemplate.remove(query, "config_schema");
+        toGameConfigMongoTemplate.remove(query, COLLECTION_NAME);
         return R.ok();
     }
 
@@ -74,28 +76,42 @@ public class ConfigController {
     public R updateSchemaFields(@PathVariable String collection, @RequestBody List<Map<String, Object>> columns) {
         Query query = Query.query(Criteria.where("collection").is(collection));
         Update update = new Update().set("columns", columns);
-        toGameConfigMongoTemplate.updateFirst(query, update, "config_schema");
+        toGameConfigMongoTemplate.updateFirst(query, update, COLLECTION_NAME);
         return R.ok();
+    }
+    @GetMapping("/schema/column/{collection}/{fieldName}")
+    public R getSchemaColumn(@PathVariable String collection,@PathVariable String fieldName) {
+// ... existing code ...
+        Query query = Query.query(Criteria.where("collection").is(collection));
+        query.addCriteria(Criteria.where("columns.fieldName").is(fieldName));
+        return R.ok(toGameConfigMongoTemplate.findOne(query, Map.class, COLLECTION_NAME));
     }
     @PostMapping("/schema/column/{collection}")
     public R addSchemaColumn(@PathVariable String collection, @RequestBody SchemaColumnBo schemaColumn ) {
         Query query = Query.query(Criteria.where("collection").is(collection));
         Update update = new Update().push("columns", schemaColumn);
-        toGameConfigMongoTemplate.updateFirst(query, update, collection);
+        toGameConfigMongoTemplate.updateFirst(query, update, COLLECTION_NAME);
         return R.ok();
     }
     @PutMapping("/schema/column/{collection}/{index}")
     public R updateSchemaColumn(@PathVariable String collection,@PathVariable String index, @RequestBody SchemaColumnBo schemaColumn) {
         Query query = Query.query(Criteria.where("collection").is(collection));
         Update update = new Update().set( "columns." + index, schemaColumn);
-        toGameConfigMongoTemplate.updateFirst(query, update, collection);
+        toGameConfigMongoTemplate.updateFirst(query, update, COLLECTION_NAME);
         return R.ok();
     }
-    @DeleteMapping("/schema/column/{collection}/{fieldName}")
-    public R deleteSchemaColumn(@PathVariable String collection,@PathVariable String fieldName) {
+    @DeleteMapping("/schema/column/{collection}/{fieldNames}")
+    public R deleteSchemaColumn(@PathVariable String collection,@PathVariable String[] fieldNames) {
+// ... existing code ...
         Query query = Query.query(Criteria.where("collection").is(collection));
-        Update update = new Update().pull("columns", Document.parse("{ 'fieldName': '".concat(fieldName).concat("' }")));
-        toGameConfigMongoTemplate.updateFirst(query, update, collection);
+        // 使用预定义常量替换硬编码字符串，提高可读性和可维护性
+        Document fieldCriteria = new Document("fieldName", new Document("$in", Arrays.asList(fieldNames)));
+        Document pullOperation = new Document("$pull", new Document("columns", fieldCriteria));
+
+        Update update = Update.fromDocument(pullOperation);
+        toGameConfigMongoTemplate.updateFirst(query,update, COLLECTION_NAME);
+// ... existing code ...
+
         return R.ok();
     }
 
@@ -103,7 +119,7 @@ public class ConfigController {
     @GetMapping("/schema/{collection}")
     public R<Map<String, Object>> getSchema(@PathVariable String collection) {
         Query query = Query.query(Criteria.where("collection").is(collection));
-        return R.ok(toGameConfigMongoTemplate.findOne(query, Map.class, "config_schema"));
+        return R.ok(toGameConfigMongoTemplate.findOne(query, Map.class, COLLECTION_NAME));
     }
 
     // 获取该表数据列表
