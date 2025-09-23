@@ -1,44 +1,22 @@
 package org.dromara.game.config.service;
 
-import lombok.RequiredArgsConstructor;
-import org.dromara.common.mongo.model.backend.SchemaHistory;
-import org.dromara.common.mongo.model.toGameConfig.ConfigSchema;
-import org.dromara.common.mongo.repository.toGameConfig.ConfigSchemaRepository;
-import org.dromara.common.mongo.repository.backend.SchemaHistoryRepository;
-import org.springframework.stereotype.Service;
+import org.dromara.common.mybatis.core.page.PageQuery;
+import org.dromara.game.config.domain.bo.SchemaColumnBo;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-@Service
-@RequiredArgsConstructor
-public class ConfigSchemaService {
-    private final ConfigSchemaRepository schemaRepo;
-    private final SchemaHistoryRepository historyRepo;
+public interface ConfigSchemaService {
 
-    public ConfigSchema createSchema(ConfigSchema dto, String operator) {
-        dto.setVersion(1);
-        dto.setCreatedAt(new Date());
-        dto.setUpdatedAt(new Date());
-        dto.setCreatedBy(operator);
-        dto.setUpdatedBy(operator);
-        ConfigSchema saved = schemaRepo.save(dto);
+    public List<Map> getSchemaItems(String tableName, PageQuery pageQuery);
 
-        // Save Schema History
-        SchemaHistory history = new SchemaHistory();
-        history.setSchemaId(saved.getId());
-        history.setTableName(saved.getTableName());
-        history.setVersion(saved.getVersion());
-        history.setSnapshot(saved);
-        history.setOperator(operator);
-        history.setOpAt(new Date());
-        history.setOpType("CREATE");
-        historyRepo.save(history);
+    Map getSchemaItemInfo(String tableName);
 
-        return saved;
-    }
+    void addSchemaItem(String tableName,Map<String, Object> data);
 
-    public List<SchemaHistory> getSchemaHistory(String tableName) {
-        return historyRepo.findBySchemaIdOrderByVersionDesc(tableName);
-    }
+    List<Map<String, Object>> getUrls();
+
+    List<SchemaColumnBo> getSchemaColumns(String tableName);
+
+    void updateSchemaItem(String tableName, Map<String, Object> data);
 }

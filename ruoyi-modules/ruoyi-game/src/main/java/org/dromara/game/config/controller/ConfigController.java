@@ -58,7 +58,7 @@ public class ConfigController {
 
     // 创建一个新的配置表（仅注册 schema）
     @PostMapping("/schema/create")
-    public R createSchema(@RequestBody Map<String, Object> schema) {
+    public R createSchema(@RequestBody SchemaColumnBo  schema) {
         toGameConfigMongoTemplate.insert(schema, COLLECTION_NAME);
         return R.ok();
     }
@@ -67,6 +67,10 @@ public class ConfigController {
     @PostMapping("/schema/delete")
     public R deleteSchema(@RequestBody String collection) {
         Query query = Query.query(Criteria.where("collection").is(collection));
+        long count = toGameConfigMongoTemplate.count(new Query(), Map.class, collection);
+        if (count > 0) {
+            return R.fail("该表有数据，请先清空数据");
+        }
         toGameConfigMongoTemplate.remove(query, COLLECTION_NAME);
         return R.ok();
     }
@@ -102,7 +106,6 @@ public class ConfigController {
     }
     @DeleteMapping("/schema/column/{collection}/{fieldNames}")
     public R deleteSchemaColumn(@PathVariable String collection,@PathVariable String[] fieldNames) {
-// ... existing code ...
         Query query = Query.query(Criteria.where("collection").is(collection));
         // 使用预定义常量替换硬编码字符串，提高可读性和可维护性
         Document fieldCriteria = new Document("fieldName", new Document("$in", Arrays.asList(fieldNames)));

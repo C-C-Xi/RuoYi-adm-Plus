@@ -11,10 +11,10 @@ public class SchemaColumnBo {
     private String component;
     private boolean  required;
     private String  dataType;
-    private List<Options> options;
-    @Data
-    class Options {
-        private String label;
-        private String value;
-    }
+//    private List<Options> options;
+//    @Data
+//    class Options {
+//        private String label;
+//        private String value;
+//    }
 }
