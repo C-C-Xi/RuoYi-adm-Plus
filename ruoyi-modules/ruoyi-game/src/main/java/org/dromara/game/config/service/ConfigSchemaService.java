@@ -10,9 +10,9 @@ public interface ConfigSchemaService {
 
     public List<Map> getSchemaItems(String tableName, PageQuery pageQuery);
 
-    Map getSchemaItemInfo(String tableName);
+    Map getSchemaItemInfo(String tableName,int urlId,int id);
 
-    void addSchemaItem(String tableName,Map<String, Object> data);
+    void addSchemazItem(String tableName, Map<String, Object> data);
 
     List<Map<String, Object>> getUrls();
 

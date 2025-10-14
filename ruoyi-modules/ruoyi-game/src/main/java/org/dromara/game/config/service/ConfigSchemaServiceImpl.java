@@ -45,12 +45,19 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
     }
 
     @Override
-    public Map getSchemaItemInfo(String tableName) {
-        return Map.of();
+    public Map getSchemaItemInfo(String tableName,int urlId,int id) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("Id").is(id));
+        Query tableQuery = Query.query(Criteria.where("collection").is(tableName));
+        tableQuery.addCriteria(Criteria.where("columns.UrlId").exists(true));
+        if(toGameConfigMongoTemplate.count(tableQuery, Map.class, COLLECTION_NAME)>0){
+            query.addCriteria(Criteria.where("UrlId").is(urlId));
+        }
+        return toGameConfigMongoTemplate.findOne(query, Map.class, tableName);
     }
 
     @Override
-    public void addSchemaItem(String tableName, Map<String, Object> data) {
+    public void addSchemazItem(String tableName, Map<String, Object> data) {
         SchemaBo schemaBo = toGameConfigMongoTemplate.findOne(Query.query(Criteria.where("collection").is(tableName)),
                 SchemaBo.class, COLLECTION_NAME);
         Map<String, Object> result = this.getFormatSchemaItem(tableName, data, schemaBo);
@@ -64,7 +71,11 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
         if (toGameConfigMongoTemplate.exists(query, tableName)) {
             throw new RuntimeException("数据已存在");
         }
-        toGameConfigMongoTemplate.insert(data, tableName);
+        log.info("插入数据：" + JsonUtils.toJsonString(result));
+        log.info(tableName);
+       Object object= toGameConfigMongoTemplate.insert(result, tableName);
+        log.info("插入数据：" + JsonUtils.toJsonString(object));
+
     }
 
     @Override
