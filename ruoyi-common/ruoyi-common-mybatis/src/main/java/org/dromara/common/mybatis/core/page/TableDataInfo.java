@@ -70,6 +70,17 @@ public class TableDataInfo<T> implements Serializable {
     /**
      * 根据数据列表构建表格分页数据对象
      */
+    public static <T> TableDataInfo<T> build(List<T> list,long  total) {
+        TableDataInfo<T> rspData = new TableDataInfo<>();
+        rspData.setCode(HttpStatus.HTTP_OK);
+        rspData.setMsg("查询成功");
+        rspData.setRows(list);
+        rspData.setTotal(total);
+        return rspData;
+    }
+    /**
+     * 根据数据列表构建表格分页数据对象
+     */
     public static <T> TableDataInfo<T> build(List<T> list) {
         TableDataInfo<T> rspData = new TableDataInfo<>();
         rspData.setCode(HttpStatus.HTTP_OK);

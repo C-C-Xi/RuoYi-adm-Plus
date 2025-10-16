@@ -2,10 +2,13 @@ package org.dromara.game.config.service;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
+import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.game.config.domain.ConfigUpsertBO;
 import org.dromara.game.config.domain.bo.SchemaBo;
 import org.dromara.game.config.domain.bo.SchemaColumnBo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +19,12 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.core.query.UpdateDefinition;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -33,24 +36,26 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
     private MongoTemplate toGameConfigMongoTemplate;
 
     @Override
-    public List<Map> getSchemaItems(String tableName, PageQuery pageQuery) {
+    public TableDataInfo<Map> getSchemaItems(String tableName, PageQuery pageQuery, Integer Id) {
         Query query = new Query();
-//        if(bo.getCollection() != null){
-//            query.addCriteria(Criteria.where("collection").is(bo.getCollection()));
-//        }
+
+        if (null != Id) {
+            query.addCriteria(Criteria.where("Id").is(Id));
+        }
         query.skip((pageQuery.getPageNum() - 1) * pageQuery.getPageSize());
         query.limit(pageQuery.getPageSize());
         List<Map> tablelogs = toGameConfigMongoTemplate.find(query, Map.class, tableName);
-        return tablelogs;
+        Long count = toGameConfigMongoTemplate.count(query, Map.class, tableName);
+        return TableDataInfo.build(tablelogs, count);
     }
 
     @Override
-    public Map getSchemaItemInfo(String tableName,int urlId,int id) {
+    public Map getSchemaItemInfo(String tableName, int urlId, int id) {
         Query query = new Query();
         query.addCriteria(Criteria.where("Id").is(id));
         Query tableQuery = Query.query(Criteria.where("collection").is(tableName));
         tableQuery.addCriteria(Criteria.where("columns.UrlId").exists(true));
-        if(toGameConfigMongoTemplate.count(tableQuery, Map.class, COLLECTION_NAME)>0){
+        if (toGameConfigMongoTemplate.count(tableQuery, Map.class, COLLECTION_NAME) > 0) {
             query.addCriteria(Criteria.where("UrlId").is(urlId));
         }
         return toGameConfigMongoTemplate.findOne(query, Map.class, tableName);
@@ -60,22 +65,20 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
     public void addSchemazItem(String tableName, Map<String, Object> data) {
         SchemaBo schemaBo = toGameConfigMongoTemplate.findOne(Query.query(Criteria.where("collection").is(tableName)),
                 SchemaBo.class, COLLECTION_NAME);
-        Map<String, Object> result = this.getFormatSchemaItem(tableName, data, schemaBo);
-        Query query = new Query();
-        String[] conditions = schemaBo.getPrimaryKey().split(",");
-        for (String condition : conditions) {
-            if (data.containsKey(condition)) {
-                query.addCriteria(Criteria.where(condition).is(data.get(condition)));
-            }
+        if (schemaBo == null) {
+            throw new RuntimeException("未找到表配置信息: " + tableName);
         }
+        ConfigUpsertBO configUpsertBO = this.getFormatSchemaItem(tableName, data, schemaBo);
+        Query query = configUpsertBO.getQuery();
+        Document result = configUpsertBO.getDocument();
         if (toGameConfigMongoTemplate.exists(query, tableName)) {
             throw new RuntimeException("数据已存在");
         }
         log.info("插入数据：" + JsonUtils.toJsonString(result));
-        log.info(tableName);
-       Object object= toGameConfigMongoTemplate.insert(result, tableName);
-        log.info("插入数据：" + JsonUtils.toJsonString(object));
-
+        log.debug("插入表名：" + tableName);
+        result.put("_id",String.valueOf(System.currentTimeMillis()));
+        Object object = toGameConfigMongoTemplate.insert(result, tableName);
+        log.debug("插入数据成功：" + JsonUtils.toJsonString(object));
     }
 
     @Override
@@ -141,36 +144,62 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
 
     @Override
     public void updateSchemaItem(String tableName, Map<String, Object> data) {
+        SchemaBo schemaBo = toGameConfigMongoTemplate.findOne(Query.query(Criteria.where("collection").is(tableName)),
+                SchemaBo.class, COLLECTION_NAME);
+        ConfigUpsertBO configUpsertBO = this.getFormatSchemaItem(tableName, data, schemaBo);
+        Query query = configUpsertBO.getQuery();
+        Document result = configUpsertBO.getDocument();
+        if (!toGameConfigMongoTemplate.exists(query, tableName)) {
+            throw new RuntimeException("数据不存在");
+        }
+        // 正确的更新方式：逐个字段添加到Update对象中
+        Update update = new Update();
+        for (Map.Entry<String, Object> entry : result.entrySet()) {
+            update.set(entry.getKey(), entry.getValue());
+        }
+
+        Object object = toGameConfigMongoTemplate.updateFirst(query, update, tableName);
+        log.info("更新数据：" + JsonUtils.toJsonString(object));
 
     }
 
+    @Override
+    public void deleteItem(String tableName, String[] ids) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").in(ids));
+        toGameConfigMongoTemplate.remove(query, tableName);
+    }
 
-    private Map<String, Object> getFormatSchemaItem(String tableName, Map<String, Object> data, SchemaBo schemaBo) {
 
+    private ConfigUpsertBO getFormatSchemaItem(String tableName, Map<String, Object> data, SchemaBo schemaBo) {
+        Document result = new Document();
+        Query query = new Query();
         if (schemaBo != null) {
             List<SchemaColumnBo> schemaColumnBos = schemaBo.getColumns();
+            String[]primaryKey = schemaBo.getPrimaryKey().split(",");
             for (SchemaColumnBo schemaColumnBo : schemaColumnBos) {
-                if (schemaColumnBo.getFieldName().equals(data.get(schemaColumnBo.getFieldName()))) {
-                    Object value = data.get(schemaColumnBo.getFieldName());
-                    switch (schemaColumnBo.getDataType()) {
-                        case "int":
-                            data.put(schemaColumnBo.getFieldName(), Integer.valueOf(value.toString()));
-                            break;
-                        case "string":
-                            data.put(schemaColumnBo.getFieldName(), value.toString());
-                            break;
-                        case "boolean":
-                            data.put(schemaColumnBo.getFieldName(), Boolean.valueOf(value.toString()));
-                            break;
-                        case "long":
-                            data.put(schemaColumnBo.getFieldName(), Long.valueOf(value.toString()));
-                            break;
-                    }
+                Object value = data.get(schemaColumnBo.getFieldName());
 
+                switch (schemaColumnBo.getDataType()) {
+                    case "int":
+                        result.put(schemaColumnBo.getFieldName(), Integer.valueOf(value.toString()));
+                        break;
+                    case "string":
+                        result.put(schemaColumnBo.getFieldName(), value.toString());
+                        break;
+                    case "boolean":
+                        result.put(schemaColumnBo.getFieldName(), Boolean.valueOf(value.toString()));
+                        break;
+                    case "long":
+                        result.put(schemaColumnBo.getFieldName(), Long.valueOf(value.toString()));
+                        break;
+                }
+                if( Arrays.stream(primaryKey).anyMatch(key -> key.equals(schemaColumnBo.getFieldName()))){
+                    query.addCriteria(Criteria.where(schemaColumnBo.getFieldName()).is(result.get(schemaColumnBo.getFieldName())));
                 }
             }
         }
-        ;
-        return data;
+
+        return new ConfigUpsertBO(query,result);
     }
 }

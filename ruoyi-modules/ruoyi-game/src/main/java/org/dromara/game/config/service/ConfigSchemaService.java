@@ -1,6 +1,7 @@
 package org.dromara.game.config.service;
 
 import org.dromara.common.mybatis.core.page.PageQuery;
+import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.game.config.domain.bo.SchemaColumnBo;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.Map;
 
 public interface ConfigSchemaService {
 
-    public List<Map> getSchemaItems(String tableName, PageQuery pageQuery);
+    public TableDataInfo<Map> getSchemaItems(String tableName, PageQuery pageQuery, Integer Id);
 
     Map getSchemaItemInfo(String tableName,int urlId,int id);
 
@@ -19,4 +20,8 @@ public interface ConfigSchemaService {
     List<SchemaColumnBo> getSchemaColumns(String tableName);
 
     void updateSchemaItem(String tableName, Map<String, Object> data);
+
+    void deleteItem(String tableName, String[] ids);
+
+    List<SysConfigVo> selectConfigList(String tableName);
 }

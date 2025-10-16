@@ -1,10 +1,16 @@
 package org.dromara.game.config.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.domain.R;
+import org.dromara.common.excel.utils.ExcelUtil;
 import org.dromara.common.json.utils.JsonUtils;
+import org.dromara.common.log.annotation.Log;
+import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.core.page.PageQuery;
+import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.game.config.domain.bo.SchemaColumnBo;
 import org.dromara.game.config.service.ConfigSchemaService;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +38,8 @@ public class ConfigSchemaController {
         return R.ok(schemaService.getSchemaColumns(tableName));
     }
     @GetMapping("/{tableName}/list")
-    public R<List<Map>> getSchema(PageQuery pageQuery, @PathVariable String tableName) {
-        return R.ok(schemaService.getSchemaItems(tableName,pageQuery));
+    public TableDataInfo getSchema(PageQuery pageQuery, @RequestParam(required = false) Integer Id, @PathVariable String tableName) {
+        return schemaService.getSchemaItems(tableName,pageQuery, Id );
     }
     @GetMapping("/{tableName}/{urlId}/{id}")
     public R<Map> getSchema(@PathVariable int urlId,@PathVariable int id,@PathVariable String tableName) {
@@ -51,4 +57,21 @@ public class ConfigSchemaController {
         schemaService.updateSchemaItem(tableName, data);
         return R.ok();
     }
+    @DeleteMapping("/{tableName}/{ids}")
+    public R deleteItem(@PathVariable String tableName,@PathVariable String[] ids) {
+        schemaService.deleteItem(tableName, ids);
+        return R.ok();
+    }
+
+
+    /**
+     * 导出参数配置列表
+     */
+    @Log(title = "导出参数", businessType = BusinessType.EXPORT)
+    @PostMapping("{tableName}/export")
+    public void export(@PathVariable String tableName, HttpServletResponse response) {
+//        List<Map> list = schemaService.selectConfigList(tableName);
+//        ExcelUtil.exportExcel(list, "参数数据", SysConfigVo.class, response);
+    }
+
 }
