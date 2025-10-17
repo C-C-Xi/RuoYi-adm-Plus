@@ -9,7 +9,7 @@ import java.util.Map;
 
 public interface ConfigSchemaService {
 
-    public TableDataInfo<Map> getSchemaItems(String tableName, PageQuery pageQuery, Integer Id);
+    public TableDataInfo<Map> getSchemaItems(String tableName, PageQuery pageQuery, Integer Id, Integer UrlId);
 
     Map getSchemaItemInfo(String tableName,int urlId,int id);
 
@@ -23,5 +23,5 @@ public interface ConfigSchemaService {
 
     void deleteItem(String tableName, String[] ids);
 
-    List<SysConfigVo> selectConfigList(String tableName);
+    List<Map> selectConfigList(String tableName);
 }

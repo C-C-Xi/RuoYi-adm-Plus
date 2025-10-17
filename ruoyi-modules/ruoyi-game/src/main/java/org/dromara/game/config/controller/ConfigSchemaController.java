@@ -38,8 +38,8 @@ public class ConfigSchemaController {
         return R.ok(schemaService.getSchemaColumns(tableName));
     }
     @GetMapping("/{tableName}/list")
-    public TableDataInfo getSchema(PageQuery pageQuery, @RequestParam(required = false) Integer Id, @PathVariable String tableName) {
-        return schemaService.getSchemaItems(tableName,pageQuery, Id );
+    public TableDataInfo getSchema(PageQuery pageQuery, @RequestParam(required = false) Integer Id, @RequestParam(required = false) Integer UrlId, @PathVariable String tableName) {
+        return schemaService.getSchemaItems(tableName,pageQuery, Id,UrlId );
     }
     @GetMapping("/{tableName}/{urlId}/{id}")
     public R<Map> getSchema(@PathVariable int urlId,@PathVariable int id,@PathVariable String tableName) {
@@ -67,11 +67,11 @@ public class ConfigSchemaController {
     /**
      * 导出参数配置列表
      */
-    @Log(title = "导出参数", businessType = BusinessType.EXPORT)
-    @PostMapping("{tableName}/export")
-    public void export(@PathVariable String tableName, HttpServletResponse response) {
-//        List<Map> list = schemaService.selectConfigList(tableName);
-//        ExcelUtil.exportExcel(list, "参数数据", SysConfigVo.class, response);
+    @Log(title = "导出配置列表", businessType = BusinessType.EXPORT)
+    @PostMapping("export")
+    public void export( String tableName, HttpServletResponse response) {
+        List<Map> list = schemaService.selectConfigList(tableName);
+        ExcelUtil.exportExcel(list, "配置列表", Map.class, response);
     }
 
 }

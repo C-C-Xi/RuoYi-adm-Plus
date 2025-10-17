@@ -36,11 +36,14 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
     private MongoTemplate toGameConfigMongoTemplate;
 
     @Override
-    public TableDataInfo<Map> getSchemaItems(String tableName, PageQuery pageQuery, Integer Id) {
+    public TableDataInfo<Map> getSchemaItems(String tableName, PageQuery pageQuery, Integer Id, Integer UrlId) {
         Query query = new Query();
 
         if (null != Id) {
             query.addCriteria(Criteria.where("Id").is(Id));
+        }
+        if (null != UrlId) {
+            query.addCriteria(Criteria.where("UrlId").is(UrlId));
         }
         query.skip((pageQuery.getPageNum() - 1) * pageQuery.getPageSize());
         query.limit(pageQuery.getPageSize());
@@ -168,6 +171,11 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").in(ids));
         toGameConfigMongoTemplate.remove(query, tableName);
+    }
+
+    @Override
+    public List<Map> selectConfigList(String tableName) {
+        return  toGameConfigMongoTemplate.find(new Query(), Map.class, tableName);
     }
 
 

@@ -44,6 +44,11 @@ public class DataWriteHandler implements SheetWriteHandler, CellWriteHandler {
         headColumnMap = getRequiredMap(clazz);
     }
 
+//    public DataWriteHandler(Map<String,Object>map) {
+//        notationMap = getNotationMap(clazz);
+//        headColumnMap = getRequiredMap(clazz);
+//    }
+
     @Override
     public void afterCellDispose(CellWriteHandlerContext context) {
         if (CollUtil.isEmpty(notationMap) && CollUtil.isEmpty(headColumnMap)) {
@@ -104,6 +109,22 @@ public class DataWriteHandler implements SheetWriteHandler, CellWriteHandler {
         return requiredMap;
     }
 
+    /**
+     * 获取批注
+     */
+//    private static Map<String, String> getNotationMap(Map<String,Object>map) {
+//        Map<String, String> notationMap = new HashMap<>();
+//        Field[] fields = clazz.getDeclaredFields();
+//        for (Field field : fields) {
+//            if (!field.isAnnotationPresent(ExcelNotation.class)) {
+//                continue;
+//            }
+//            ExcelNotation excelNotation = field.getAnnotation(ExcelNotation.class);
+//            ExcelProperty excelProperty = field.getAnnotation(ExcelProperty.class);
+//            notationMap.put(excelProperty.value()[0], excelNotation.value());
+//        }
+//        return notationMap;
+//    }
     /**
      * 获取批注
      */
