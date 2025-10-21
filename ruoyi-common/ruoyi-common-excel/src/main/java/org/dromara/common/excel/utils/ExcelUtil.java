@@ -91,6 +91,15 @@ public class ExcelUtil {
             throw new RuntimeException("导出Excel异常");
         }
     }
+    public static <T> void exportExcelByMap(List<T> list, String sheetName, Class<T> clazz, HttpServletResponse response) {
+        try {
+            resetResponse(sheetName, response);
+            ServletOutputStream os = response.getOutputStream();
+            exportExcel(list, sheetName, clazz, false, os, null);
+        } catch (IOException e) {
+            throw new RuntimeException("导出Excel异常");
+        }
+    }
 
     /**
      * 导出excel

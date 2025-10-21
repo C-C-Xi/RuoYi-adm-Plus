@@ -42,6 +42,8 @@ public class DataWriteHandler implements SheetWriteHandler, CellWriteHandler {
     public DataWriteHandler(Class<?> clazz) {
         notationMap = getNotationMap(clazz);
         headColumnMap = getRequiredMap(clazz);
+        System.out.println(notationMap);
+        System.out.println(headColumnMap);
     }
 
 //    public DataWriteHandler(Map<String,Object>map) {

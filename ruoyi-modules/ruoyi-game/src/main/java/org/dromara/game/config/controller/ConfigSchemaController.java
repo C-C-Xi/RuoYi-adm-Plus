@@ -5,14 +5,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.domain.R;
+import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.excel.utils.ExcelUtil;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.game.config.domain.bo.SchemaBo;
 import org.dromara.game.config.domain.bo.SchemaColumnBo;
+import org.dromara.game.config.domain.req.ConfigExportParam;
 import org.dromara.game.config.service.ConfigSchemaService;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,8 +74,9 @@ public class ConfigSchemaController {
      */
     @Log(title = "导出配置列表", businessType = BusinessType.EXPORT)
     @PostMapping("export")
-    public void export( String tableName, HttpServletResponse response) {
-        List<Map> list = schemaService.selectConfigList(tableName);
+    public void export(@RequestBody ConfigExportParam param, HttpServletResponse response) {
+
+        List<Map> list = schemaService.selectConfigList(param.getTableName(), param.getUrlId());
         ExcelUtil.exportExcel(list, "配置列表", Map.class, response);
     }
 

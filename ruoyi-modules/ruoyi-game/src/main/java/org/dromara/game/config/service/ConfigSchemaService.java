@@ -23,5 +23,5 @@ public interface ConfigSchemaService {
 
     void deleteItem(String tableName, String[] ids);
 
-    List<Map> selectConfigList(String tableName);
+    List<Map> selectConfigList(String tableName,Integer UrlId);
 }

@@ -38,11 +38,12 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
     @Override
     public TableDataInfo<Map> getSchemaItems(String tableName, PageQuery pageQuery, Integer Id, Integer UrlId) {
         Query query = new Query();
-
-        if (null != Id) {
+        SchemaBo schemaBo = toGameConfigMongoTemplate.findOne(Query.query(Criteria.where("collection").is(tableName)),
+                SchemaBo.class, COLLECTION_NAME);
+        if (null != Id&&StringUtils.contains( schemaBo.getPrimaryKey(),"Id")) {
             query.addCriteria(Criteria.where("Id").is(Id));
         }
-        if (null != UrlId) {
+        if (null != UrlId&&StringUtils.contains(schemaBo.getPrimaryKey(),"UrlId")) {
             query.addCriteria(Criteria.where("UrlId").is(UrlId));
         }
         query.skip((pageQuery.getPageNum() - 1) * pageQuery.getPageSize());
@@ -174,8 +175,14 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
     }
 
     @Override
-    public List<Map> selectConfigList(String tableName) {
-        return  toGameConfigMongoTemplate.find(new Query(), Map.class, tableName);
+    public List<Map> selectConfigList(String tableName,Integer UrlId) {
+        Query query = new Query();
+        SchemaBo schemaBo = toGameConfigMongoTemplate.findOne(Query.query(Criteria.where("collection").is(tableName)),
+                SchemaBo.class, COLLECTION_NAME);
+        if (null != UrlId&&StringUtils.contains(schemaBo.getPrimaryKey(),"UrlId")) {
+            query.addCriteria(Criteria.where("UrlId").is(UrlId));
+        }
+        return  toGameConfigMongoTemplate.find(query, Map.class, tableName);
     }
 
 
