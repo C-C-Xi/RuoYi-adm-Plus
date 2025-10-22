@@ -76,8 +76,8 @@ public class ConfigSchemaController {
     @PostMapping("export")
     public void export(@RequestBody ConfigExportParam param, HttpServletResponse response) {
 
-        List<Map> list = schemaService.selectConfigList(param.getTableName(), param.getUrlId());
-        ExcelUtil.exportExcel(list, "配置列表", Map.class, response);
+        schemaService.selectConfigList(param.getTableName(), param.getUrlId(),response);
+
     }
 
 }

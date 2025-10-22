@@ -1,5 +1,6 @@
 package org.dromara.game.config.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.game.config.domain.bo.SchemaColumnBo;
@@ -23,5 +24,5 @@ public interface ConfigSchemaService {
 
     void deleteItem(String tableName, String[] ids);
 
-    List<Map> selectConfigList(String tableName,Integer UrlId);
+    void selectConfigList(String tableName,Integer UrlId, HttpServletResponse response);
 }

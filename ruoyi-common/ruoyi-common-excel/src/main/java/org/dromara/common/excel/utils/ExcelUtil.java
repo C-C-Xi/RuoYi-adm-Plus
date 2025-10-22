@@ -24,9 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Excel相关处理
@@ -86,19 +84,53 @@ public class ExcelUtil {
         try {
             resetResponse(sheetName, response);
             ServletOutputStream os = response.getOutputStream();
+
             exportExcel(list, sheetName, clazz, false, os, null);
         } catch (IOException e) {
             throw new RuntimeException("导出Excel异常");
         }
     }
-    public static <T> void exportExcelByMap(List<T> list, String sheetName, Class<T> clazz, HttpServletResponse response) {
+    public static <T> void exportExcelByMap(List<Map> list, String sheetName, Map<String,String>headMap, HttpServletResponse response) {
         try {
             resetResponse(sheetName, response);
             ServletOutputStream os = response.getOutputStream();
-            exportExcel(list, sheetName, clazz, false, os, null);
+            System.out.println(headMap);
+            List<String> headerList = headMap.values().stream().toList();
+            ExcelWriterSheetBuilder builder = FastExcel.write(os)
+                    .autoCloseStream(false)
+                    .head(Collections.singletonList(headerList))
+                    // 自动适配
+                    .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
+                    // 大数值自动转换 防止失真
+                    .registerConverter(new ExcelBigNumberConvert())
+                    .sheet(sheetName);
+            builder.doWrite(() -> {
+                List<List<Object>> dataRows = new ArrayList<>();
+                for (Map<String, Object> map : list) {
+                    List<Object> row = new ArrayList<>();
+                    for (String key : headMap.keySet()) {
+                        row.add(map.get(key));
+                    }
+                    dataRows.add(row);
+                }
+                System.out.println(dataRows);
+                return dataRows;
+            });
         } catch (IOException e) {
             throw new RuntimeException("导出Excel异常");
         }
+    }
+
+    private List<List<Object>> convertMapsToRows(List<Map<String, Object>> mapList, List<String> columnOrder) {
+        List<List<Object>> rows = new ArrayList<>();
+        for (Map<String, Object> map : mapList) {
+            List<Object> row = new ArrayList<>();
+            for (String key : columnOrder) {
+                row.add(map.get(key)); // 按照 columnOrder 的顺序添加值
+            }
+            rows.add(row);
+        }
+        return rows;
     }
 
     /**

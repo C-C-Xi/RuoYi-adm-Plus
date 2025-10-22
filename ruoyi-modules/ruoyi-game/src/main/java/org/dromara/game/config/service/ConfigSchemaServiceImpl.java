@@ -1,10 +1,12 @@
 package org.dromara.game.config.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.excel.utils.ExcelUtil;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
@@ -175,14 +177,17 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
     }
 
     @Override
-    public List<Map> selectConfigList(String tableName,Integer UrlId) {
+    public void selectConfigList(String tableName,Integer UrlId, HttpServletResponse response) {
         Query query = new Query();
         SchemaBo schemaBo = toGameConfigMongoTemplate.findOne(Query.query(Criteria.where("collection").is(tableName)),
                 SchemaBo.class, COLLECTION_NAME);
         if (null != UrlId&&StringUtils.contains(schemaBo.getPrimaryKey(),"UrlId")) {
             query.addCriteria(Criteria.where("UrlId").is(UrlId));
         }
-        return  toGameConfigMongoTemplate.find(query, Map.class, tableName);
+        Map<String,String>headMap=new HashMap<>();
+        schemaBo.getColumns().stream().forEach(column -> {headMap.put(column.getFieldName(),column.getLabel());});
+        List<Map> list=  toGameConfigMongoTemplate.find(query, Map.class, tableName);
+        ExcelUtil.exportExcelByMap(list, "配置列表", headMap, response);
     }
 
 
