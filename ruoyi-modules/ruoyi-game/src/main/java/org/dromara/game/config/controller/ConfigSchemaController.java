@@ -74,9 +74,9 @@ public class ConfigSchemaController {
      */
     @Log(title = "导出配置列表", businessType = BusinessType.EXPORT)
     @PostMapping("export")
-    public void export(@RequestBody ConfigExportParam param, HttpServletResponse response) {
+    public void export(@RequestParam Map<String, String> formData, HttpServletResponse response) {
 
-        schemaService.selectConfigList(param.getTableName(), param.getUrlId(),response);
+        schemaService.selectConfigList(formData.get("tableName"), Integer.valueOf(formData.get("UrlId")),response);
 
     }
 

@@ -185,8 +185,13 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
             query.addCriteria(Criteria.where("UrlId").is(UrlId));
         }
         Map<String,String>headMap=new HashMap<>();
-        schemaBo.getColumns().stream().forEach(column -> {headMap.put(column.getFieldName(),column.getLabel());});
+        Map<String,String>headKeyMap=new HashMap<>();
+        schemaBo.getColumns().stream().forEach(column -> {
+            headKeyMap.put(column.getFieldName(),column.getFieldName());
+            headMap.put(column.getFieldName(),column.getLabel());});
+
         List<Map> list=  toGameConfigMongoTemplate.find(query, Map.class, tableName);
+        list.add(0,headKeyMap);
         ExcelUtil.exportExcelByMap(list, "配置列表", headMap, response);
     }
 

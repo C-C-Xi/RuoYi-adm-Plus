@@ -90,15 +90,18 @@ public class ExcelUtil {
             throw new RuntimeException("导出Excel异常");
         }
     }
-    public static <T> void exportExcelByMap(List<Map> list, String sheetName, Map<String,String>headMap, HttpServletResponse response) {
+
+    public static <T> void exportExcelByMap(List<Map> list, String sheetName, Map<String, String> headMap, HttpServletResponse response) {
         try {
             resetResponse(sheetName, response);
             ServletOutputStream os = response.getOutputStream();
-            System.out.println(headMap);
-            List<String> headerList = headMap.values().stream().toList();
+            List<List<String>> head = new ArrayList<>();
+            headMap.forEach((key, value) -> {
+                head.add(Collections.singletonList(value));
+            });
             ExcelWriterSheetBuilder builder = FastExcel.write(os)
                     .autoCloseStream(false)
-                    .head(Collections.singletonList(headerList))
+                    .head(head)
                     // 自动适配
                     .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
                     // 大数值自动转换 防止失真
@@ -113,7 +116,6 @@ public class ExcelUtil {
                     }
                     dataRows.add(row);
                 }
-                System.out.println(dataRows);
                 return dataRows;
             });
         } catch (IOException e) {
@@ -228,13 +230,13 @@ public class ExcelUtil {
     public static <T> void exportExcel(List<T> list, String sheetName, Class<T> clazz, boolean merge,
                                        OutputStream os, List<DropDownOptions> options) {
         ExcelWriterSheetBuilder builder = FastExcel.write(os, clazz)
-            .autoCloseStream(false)
-            // 自动适配
-            .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
-            // 大数值自动转换 防止失真
-            .registerConverter(new ExcelBigNumberConvert())
-            .registerWriteHandler(new DataWriteHandler(clazz))
-            .sheet(sheetName);
+                .autoCloseStream(false)
+                // 自动适配
+                .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
+                // 大数值自动转换 防止失真
+                .registerConverter(new ExcelBigNumberConvert())
+                .registerWriteHandler(new DataWriteHandler(clazz))
+                .sheet(sheetName);
         if (merge) {
             // 合并处理器
             builder.registerWriteHandler(new CellMergeStrategy(list, true));
@@ -279,12 +281,12 @@ public class ExcelUtil {
     public static <T> void exportTemplate(List<T> data, String templatePath, OutputStream os) {
         ClassPathResource templateResource = new ClassPathResource(templatePath);
         ExcelWriter excelWriter = FastExcel.write(os)
-            .withTemplate(templateResource.getStream())
-            .autoCloseStream(false)
-            // 大数值自动转换 防止失真
-            .registerConverter(new ExcelBigNumberConvert())
-            .registerWriteHandler(new DataWriteHandler(data.get(0).getClass()))
-            .build();
+                .withTemplate(templateResource.getStream())
+                .autoCloseStream(false)
+                // 大数值自动转换 防止失真
+                .registerConverter(new ExcelBigNumberConvert())
+                .registerWriteHandler(new DataWriteHandler(data.get(0).getClass()))
+                .build();
         WriteSheet writeSheet = FastExcel.writerSheet().build();
         FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
         // 单表多数据导出 模板格式为 {.属性}
@@ -352,11 +354,11 @@ public class ExcelUtil {
     public static void exportTemplateMultiList(Map<String, Object> data, String templatePath, OutputStream os) {
         ClassPathResource templateResource = new ClassPathResource(templatePath);
         ExcelWriter excelWriter = FastExcel.write(os)
-            .withTemplate(templateResource.getStream())
-            .autoCloseStream(false)
-            // 大数值自动转换 防止失真
-            .registerConverter(new ExcelBigNumberConvert())
-            .build();
+                .withTemplate(templateResource.getStream())
+                .autoCloseStream(false)
+                // 大数值自动转换 防止失真
+                .registerConverter(new ExcelBigNumberConvert())
+                .build();
         WriteSheet writeSheet = FastExcel.writerSheet().build();
         for (Map.Entry<String, Object> map : data.entrySet()) {
             // 设置列表后续还有数据
@@ -383,11 +385,11 @@ public class ExcelUtil {
     public static void exportTemplateMultiSheet(List<Map<String, Object>> data, String templatePath, OutputStream os) {
         ClassPathResource templateResource = new ClassPathResource(templatePath);
         ExcelWriter excelWriter = FastExcel.write(os)
-            .withTemplate(templateResource.getStream())
-            .autoCloseStream(false)
-            // 大数值自动转换 防止失真
-            .registerConverter(new ExcelBigNumberConvert())
-            .build();
+                .withTemplate(templateResource.getStream())
+                .autoCloseStream(false)
+                // 大数值自动转换 防止失真
+                .registerConverter(new ExcelBigNumberConvert())
+                .build();
         for (int i = 0; i < data.size(); i++) {
             WriteSheet writeSheet = FastExcel.writerSheet(i).build();
             for (Map.Entry<String, Object> map : data.get(i).entrySet()) {
