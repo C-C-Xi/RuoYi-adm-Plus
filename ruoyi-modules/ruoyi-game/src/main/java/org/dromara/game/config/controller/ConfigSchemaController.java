@@ -5,7 +5,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.domain.R;
+import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.excel.core.ExcelResult;
 import org.dromara.common.excel.utils.ExcelUtil;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.log.annotation.Log;
@@ -18,7 +20,9 @@ import org.dromara.game.config.domain.req.ConfigExportParam;
 import org.dromara.game.config.service.ConfigSchemaService;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +34,23 @@ import java.util.Map;
 public class ConfigSchemaController {
     private final ConfigSchemaService schemaService;
 
+    /**
+     * 导出参数配置列表
+     */
+    @Log(title = "导出配置列表", businessType = BusinessType.EXPORT)
+    @PostMapping("export/excel")
+    public void export(@RequestParam Map<String, String> formData, HttpServletResponse response) {
+
+        schemaService.selectConfigList(formData.get("tableName"), Integer.valueOf(formData.get("UrlId")),response);
+
+    }
+    @PostMapping(value = "importData/excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public R<Void> importData(@RequestParam("file") MultipartFile file,
+                              @RequestParam Map<String, String> formDat) {
+        log.info("导入数据：" + JsonUtils.toJsonString(formDat));
+        schemaService.importData(formDat.get("tableName"), Integer.valueOf(formDat.get("UrlId")),file);
+        return R.ok();
+    }
 
     @GetMapping("/urls")
     public R<List<Map<String, Object>>> getUrls() {
@@ -50,6 +71,8 @@ public class ConfigSchemaController {
     public R<Map> getSchema(@PathVariable int urlId,@PathVariable int id,@PathVariable String tableName) {
         return R.ok(schemaService.getSchemaItemInfo(tableName,urlId,id));
     }
+
+
     @PostMapping("/{tableName}")
     public R addSchemaItem(@PathVariable String tableName, @RequestBody Map<String, Object> data) {
         log.info("添加数据：" + JsonUtils.toJsonString(data));
@@ -69,15 +92,5 @@ public class ConfigSchemaController {
     }
 
 
-    /**
-     * 导出参数配置列表
-     */
-    @Log(title = "导出配置列表", businessType = BusinessType.EXPORT)
-    @PostMapping("export")
-    public void export(@RequestParam Map<String, String> formData, HttpServletResponse response) {
-
-        schemaService.selectConfigList(formData.get("tableName"), Integer.valueOf(formData.get("UrlId")),response);
-
-    }
 
 }

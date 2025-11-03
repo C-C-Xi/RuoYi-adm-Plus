@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.game.config.domain.bo.SchemaColumnBo;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -25,4 +26,6 @@ public interface ConfigSchemaService {
     void deleteItem(String tableName, String[] ids);
 
     void selectConfigList(String tableName,Integer UrlId, HttpServletResponse response);
+
+    void importData(String tableName, Integer urlId, MultipartFile file);
 }

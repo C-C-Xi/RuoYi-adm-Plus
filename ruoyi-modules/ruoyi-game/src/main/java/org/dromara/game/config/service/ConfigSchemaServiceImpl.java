@@ -5,7 +5,9 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.dromara.common.core.domain.R;
+import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.excel.core.ExcelResult;
 import org.dromara.common.excel.utils.ExcelUtil;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
@@ -24,7 +26,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.core.query.UpdateDefinition;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
@@ -193,6 +197,18 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
         List<Map> list=  toGameConfigMongoTemplate.find(query, Map.class, tableName);
         list.add(0,headKeyMap);
         ExcelUtil.exportExcelByMap(list, "配置列表", headMap, response);
+    }
+
+    @Override
+    public void importData(String tableName, Integer urlId, MultipartFile file) {
+        ExcelResult<Map<String,String>> excelResult = null;
+        try {
+            excelResult = ExcelUtil.importExcelToMap(file.getInputStream(), true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<Map> list = MapstructUtils.convert(excelResult.getList(), Map.class);
+        System.out.println( list);
     }
 
 

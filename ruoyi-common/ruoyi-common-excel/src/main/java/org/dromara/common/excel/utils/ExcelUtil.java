@@ -58,6 +58,11 @@ public class ExcelUtil {
         FastExcel.read(is, clazz, listener).sheet().doRead();
         return listener.getExcelResult();
     }
+    public static ExcelResult<Map<String,String>> importExcelToMap(InputStream is,  boolean isValidate) {
+        MapDataListener listener = new MapDataListener();
+        FastExcel.read(is, listener).headRowNumber(2).sheet().doRead();
+        return listener.getExcelResult();
+    }
 
     /**
      * 使用自定义监听器 异步导入 自定义返回
