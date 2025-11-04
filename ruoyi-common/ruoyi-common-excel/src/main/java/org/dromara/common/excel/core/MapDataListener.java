@@ -23,7 +23,6 @@ import java.util.function.Consumer;
  * @author Lion Li
  */
 @Slf4j
-@NoArgsConstructor
 public class MapDataListener extends AnalysisEventListener<Map<String, String>> implements ExcelListener<Map<String, String>> {
     private List<Map<String, String>> dataList;
     private List<String> headerNames;
@@ -33,18 +32,19 @@ public class MapDataListener extends AnalysisEventListener<Map<String, String>> 
      * 导入回执
      */
     private ExcelResult<Map<String, String>> excelResult;
-    public MapDataListener(List<Map<String, String>> dataList) {
-        this.dataList = dataList;
+    public MapDataListener() {
+        this.excelResult = new DefaultExcelResult<>();
+        this.dataList = new ArrayList<Map<String, String>>();
     }
 
     @Override
     public void invoke(Map<String, String> data, AnalysisContext context) {
         if (headerNames != null) {
-            Map<String, String> row = new LinkedHashMap<>();
+            Map<String, String> row = new HashMap<>();
             for (int i = 0; i < headerNames.size(); i++) {
                 row.put(headerNames.get(i), data.get(i));
             }
-            dataList.add(row);
+//            dataList.add(row);
             excelResult.getList().add(row);
         }
     }

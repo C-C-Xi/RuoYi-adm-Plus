@@ -27,5 +27,5 @@ public interface ConfigSchemaService {
 
     void selectConfigList(String tableName,Integer UrlId, HttpServletResponse response);
 
-    void importData(String tableName, Integer urlId, MultipartFile file);
+    void importData(String tableName, Integer urlId,Boolean updateSupport, MultipartFile file);
 }

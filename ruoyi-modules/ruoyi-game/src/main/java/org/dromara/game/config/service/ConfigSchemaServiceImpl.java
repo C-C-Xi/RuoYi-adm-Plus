@@ -200,15 +200,41 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
     }
 
     @Override
-    public void importData(String tableName, Integer urlId, MultipartFile file) {
+    public void importData(String tableName, Integer urlId, Boolean updateSupport,MultipartFile file) {
         ExcelResult<Map<String,String>> excelResult = null;
         try {
             excelResult = ExcelUtil.importExcelToMap(file.getInputStream(), true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        List<Map> list = MapstructUtils.convert(excelResult.getList(), Map.class);
-        System.out.println( list);
+        List<Map<String, String>> list =excelResult.getList();
+        SchemaBo schemaBo = toGameConfigMongoTemplate.findOne(Query.query(Criteria.where("collection").is(tableName)),
+                SchemaBo.class, COLLECTION_NAME);
+        List<Map<String, Object>> newList = new ArrayList<>();
+        for (Map<String, String> map : list) {
+            ConfigUpsertBO configUpsertBO = this.getFormatSchemaItem(tableName, new HashMap<>(map), schemaBo);
+            Query query = configUpsertBO.getQuery();
+            Document result = configUpsertBO.getDocument();
+
+            // 正确的更新方式：逐个字段添加到Update对象中
+            Update update = new Update();
+            for (Map.Entry<String, Object> entry : result.entrySet()) {
+                update.set(entry.getKey(), entry.getValue());
+            }
+            Object object =null;
+            if(updateSupport){
+                object = toGameConfigMongoTemplate.upsert(query, update, tableName);
+            }else {
+                if(!toGameConfigMongoTemplate.exists(query, tableName)){
+                    object = toGameConfigMongoTemplate.insert(result, tableName);
+                }
+
+            }
+
+            log.info("更新数据：" + JsonUtils.toJsonString(object));
+        }
+
+        System.out.println( excelResult.getList());
     }
 
 

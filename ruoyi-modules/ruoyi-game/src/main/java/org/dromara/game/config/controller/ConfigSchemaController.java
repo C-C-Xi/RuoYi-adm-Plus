@@ -48,7 +48,7 @@ public class ConfigSchemaController {
     public R<Void> importData(@RequestParam("file") MultipartFile file,
                               @RequestParam Map<String, String> formDat) {
         log.info("导入数据：" + JsonUtils.toJsonString(formDat));
-        schemaService.importData(formDat.get("tableName"), Integer.valueOf(formDat.get("UrlId")),file);
+        schemaService.importData(formDat.get("tableName"), Integer.valueOf(formDat.get("UrlId")),Boolean.valueOf(formDat.get("updateSupport")),file);
         return R.ok();
     }
 
