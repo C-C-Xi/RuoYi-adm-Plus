@@ -6,5 +6,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 
 public interface ConfigSchemaRepository extends MongoRepository<ConfigSchema, String> {
-    Optional<ConfigSchema> findByTableName(String tableName);
+    Optional<ConfigSchema> findByCollectionAndDisplayName(String collectionName,String displayName);
 }

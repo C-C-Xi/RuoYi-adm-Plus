@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @Configuration
 @EnableMongoRepositories(
         basePackages = "org.dromara.common.mongo.repository.toGameConfig",
-        mongoTemplateRef = "toGameMongoTemplate"
+        mongoTemplateRef = "toGameConfigMongoTemplate"
 )
 public class TOGameConfigMongoConfig {
     @Value("${spring.data.mongodb.TOGameConfig.uri}")

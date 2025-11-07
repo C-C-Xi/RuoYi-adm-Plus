@@ -31,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -149,7 +150,9 @@ public class ConfigSchemaServiceImpl implements ConfigSchemaService {
         Query query = new Query();
         query.addCriteria(Criteria.where("collection").is(tableName));
         SchemaBo result = toGameConfigMongoTemplate.findOne(query, SchemaBo.class, COLLECTION_NAME);
-        return result.getColumns();
+        return result.getColumns().stream()
+                .sorted(Comparator.comparingInt(SchemaColumnBo::getOrder))
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -1,9 +1,16 @@
 package org.dromara.game.config.controller;
 
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
+import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.dromara.common.core.domain.R;
+import org.dromara.common.mongo.model.toGameConfig.ConfigSchema;
+import org.dromara.common.mongo.repository.toGameConfig.ConfigSchemaRepository;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.game.config.domain.CollectionBo;
+import org.dromara.game.config.domain.bo.SchemaBo;
 import org.dromara.game.config.domain.bo.SchemaColumnBo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,13 +35,15 @@ public class ConfigController {
     @Autowired
     @Qualifier("toGameConfigMongoTemplate")
     private MongoTemplate toGameConfigMongoTemplate;
+    @Autowired
+    private ConfigSchemaRepository configSchemaRepository;
 
     // 获取所有配置表列表
     @GetMapping("/collections")
-    public R<List<Map>> listCollections() {
-        Query query=new Query();
-        List<Map> collections = toGameConfigMongoTemplate.find(query,Map.class, COLLECTION_NAME);
-        return R.ok(collections);
+    public R listCollections() {
+//        Query query=new Query();
+//        List<Map> collections = toGameConfigMongoTemplate.find(query,Map.class, COLLECTION_NAME);
+        return R.ok(configSchemaRepository.findAll());
     }
 
     /**
@@ -85,10 +94,14 @@ public class ConfigController {
     }
     @GetMapping("/schema/column/{collection}/{fieldName}")
     public R getSchemaColumn(@PathVariable String collection,@PathVariable String fieldName) {
+        System.out.println("fieldName"+fieldName);
 // ... existing code ...
         Query query = Query.query(Criteria.where("collection").is(collection));
         query.addCriteria(Criteria.where("columns.fieldName").is(fieldName));
-        return R.ok(toGameConfigMongoTemplate.findOne(query, Map.class, COLLECTION_NAME));
+        SchemaBo schemaBo=toGameConfigMongoTemplate.findOne(query, SchemaBo.class, COLLECTION_NAME);
+        System.out.println("schemaBo"+schemaBo);
+        SchemaColumnBo schemaColumnBo=schemaBo.getColumns().stream().filter(column -> column.getFieldName().equals(fieldName)).findFirst().get();
+        return R.ok(schemaColumnBo);
     }
     @PostMapping("/schema/column/{collection}")
     public R addSchemaColumn(@PathVariable String collection, @RequestBody SchemaColumnBo schemaColumn ) {
@@ -97,10 +110,22 @@ public class ConfigController {
         toGameConfigMongoTemplate.updateFirst(query, update, COLLECTION_NAME);
         return R.ok();
     }
-    @PutMapping("/schema/column/{collection}/{index}")
-    public R updateSchemaColumn(@PathVariable String collection,@PathVariable String index, @RequestBody SchemaColumnBo schemaColumn) {
-        Query query = Query.query(Criteria.where("collection").is(collection));
-        Update update = new Update().set( "columns." + index, schemaColumn);
+    @PutMapping("/schema/column/{collection}/{fieldName}")
+    public R updateSchemaColumn(@PathVariable String collection,@PathVariable String fieldName, @RequestBody SchemaColumnBo schemaColumn) {
+        Query query = new Query();
+        query.addCriteria(
+                Criteria.where("collection").is(collection)
+                        .and("columns.fieldName").is(fieldName)
+        );
+
+        Update update = new Update();
+        update.set("columns.$.label", schemaColumn.getLabel());
+//        update.set("columns.$.fieldName", schemaColumn.getFieldName());
+        update.set("columns.$.component", schemaColumn.getComponent());
+        update.set("columns.$.required", schemaColumn.isRequired());
+        update.set("columns.$.dataType", schemaColumn.getDataType());
+        update.set("columns.$.order", schemaColumn.getOrder());
+
         toGameConfigMongoTemplate.updateFirst(query, update, COLLECTION_NAME);
         return R.ok();
     }

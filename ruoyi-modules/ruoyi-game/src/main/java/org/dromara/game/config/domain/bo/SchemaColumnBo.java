@@ -11,6 +11,7 @@ public class SchemaColumnBo {
     private String component;
     private boolean  required;
     private String  dataType;
+    private Integer order;
 //    private List<Options> options;
 //    @Data
 //    class Options {
