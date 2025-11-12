@@ -38,7 +38,10 @@ public class ConfigController {
     @Autowired
     private ConfigSchemaRepository configSchemaRepository;
 
-    // 获取所有配置表列表
+    /**
+     * 获取所有配置表
+     * @return
+     */
     @GetMapping("/collections")
     public R listCollections() {
 //        Query query=new Query();
