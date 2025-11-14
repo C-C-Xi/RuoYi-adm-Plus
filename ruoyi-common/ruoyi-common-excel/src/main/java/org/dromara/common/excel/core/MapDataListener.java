@@ -46,6 +46,7 @@ public class MapDataListener extends AnalysisEventListener<Map<String, String>> 
             }
 //            dataList.add(row);
             excelResult.getList().add(row);
+
         }
     }
 

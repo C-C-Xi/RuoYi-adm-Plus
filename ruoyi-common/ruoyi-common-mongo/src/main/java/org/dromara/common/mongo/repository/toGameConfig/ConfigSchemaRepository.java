@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface ConfigSchemaRepository extends MongoRepository<ConfigSchema, String> {
     Optional<ConfigSchema> findByCollectionAndDisplayName(String collectionName,String displayName);
+    Optional<ConfigSchema> findByCollection(String collectionName);
 }

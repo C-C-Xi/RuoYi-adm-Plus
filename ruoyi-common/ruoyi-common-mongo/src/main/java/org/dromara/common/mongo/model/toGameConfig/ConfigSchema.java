@@ -13,7 +13,6 @@ import java.util.Map;
 
 @Document(collection = "config_schema")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class ConfigSchema {
     @Id
@@ -31,4 +30,9 @@ public class ConfigSchema {
 
     private List<SchemaColumn> columns;
 
+
+    public ConfigSchema() {
+        this.updateTime = new Date().getTime();
+        this.primaryKey = "Id";
+    }
 }

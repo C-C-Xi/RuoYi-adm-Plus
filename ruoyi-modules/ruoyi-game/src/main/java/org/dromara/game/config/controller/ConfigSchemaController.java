@@ -36,6 +36,8 @@ public class ConfigSchemaController {
 
     /**
      * 导出参数配置列表
+     * @param response
+     * @param formData
      */
     @Log(title = "导出配置列表", businessType = BusinessType.EXPORT)
     @PostMapping("export/excel")
@@ -44,6 +46,10 @@ public class ConfigSchemaController {
         schemaService.selectConfigList(formData.get("tableName"), Integer.valueOf(formData.get("UrlId")),response);
 
     }
+    /**
+     * 导入参数数据
+     * @param file
+     */
     @PostMapping(value = "importData/excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public R<Void> importData(@RequestParam("file") MultipartFile file,
                               @RequestParam Map<String, String> formDat) {
@@ -52,27 +58,47 @@ public class ConfigSchemaController {
         return R.ok();
     }
 
-    @GetMapping("/urls")
+    /**
+     * 获取所有配置的地址
+     */
     public R<List<Map<String, Object>>> getUrls() {
         return R.ok(schemaService.getUrls());
     }
 
-
-
+    /**
+     * 获取指定表名的字段
+     * @param tableName
+     */
     @GetMapping("/{tableName}/columns")
     public R<List<SchemaColumnBo>> getSchemaColumns(@PathVariable String tableName) {
         return R.ok(schemaService.getSchemaColumns(tableName));
     }
+
+    /**
+     * 获取指定表名的字段
+     * @param tableName
+     */
     @GetMapping("/{tableName}/list")
     public TableDataInfo getSchema(PageQuery pageQuery, @RequestParam(required = false) Integer Id, @RequestParam(required = false) Integer UrlId, @PathVariable String tableName) {
         return schemaService.getSchemaItems(tableName,pageQuery, Id,UrlId );
     }
+    /**
+     * 获取指定表名和id的数据
+     * @param tableName
+     * @param id
+     * @param urlId
+     */
     @GetMapping("/{tableName}/{urlId}/{id}")
     public R<Map> getSchema(@PathVariable int urlId,@PathVariable int id,@PathVariable String tableName) {
         return R.ok(schemaService.getSchemaItemInfo(tableName,urlId,id));
     }
 
-
+    /**
+     * 添加数据
+     * @param tableName
+     * @param data
+     * @return
+     */
     @PostMapping("/{tableName}")
     public R addSchemaItem(@PathVariable String tableName, @RequestBody Map<String, Object> data) {
         log.info("添加数据：" + JsonUtils.toJsonString(data));
@@ -80,11 +106,24 @@ public class ConfigSchemaController {
         schemaService.addSchemazItem(tableName, data);
         return R.ok();
     }
+
+    /**
+     * 更新 数据
+     * @param tableName
+     * @param data
+     * @return
+     */
     @PutMapping("/{tableName}")
     public R updateSchemaItem(@PathVariable String tableName, @RequestBody Map<String, Object> data) {
         schemaService.updateSchemaItem(tableName, data);
         return R.ok();
     }
+    /**
+     * 删除数据
+     * @param tableName
+     * @param ids
+     * @return
+     */
     @DeleteMapping("/{tableName}/{ids}")
     public R deleteItem(@PathVariable String tableName,@PathVariable String[] ids) {
         schemaService.deleteItem(tableName, ids);
