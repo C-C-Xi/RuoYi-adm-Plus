@@ -108,8 +108,6 @@ public class ConfigController {
         if (primaryKey == null || primaryKey.isEmpty()) {
             return R.fail("请填写表主键");
         }
-        System.out.println( collectionName);
-        System.out.println( displayName);
         List<List<String>> rows = new ArrayList<>();
         MapDataListener listener = new MapDataListener();
         FastExcel.read(file.getInputStream(), listener).headRowNumber(1).sheet().doRead();
@@ -146,7 +144,8 @@ public class ConfigController {
         if(configSchemaRepository.findByCollection(collectionName).isPresent()){
             return R.fail("该表已存在");
         }
-        configSchemaRepository.insert(schema);
+        schema=configSchemaRepository.insert(schema);
+
         return R.ok();
     }
 
@@ -185,6 +184,7 @@ public class ConfigController {
      * @param fieldName
      * @return
      */
+    @GetMapping("/schema/column/{collection}/{fieldName}")
     public R getSchemaColumn(@PathVariable String collection,@PathVariable String fieldName) {
         System.out.println("fieldName"+fieldName);
 // ... existing code ...
@@ -201,6 +201,7 @@ public class ConfigController {
      * @param schemaColumn
      * @return
      */
+    @PostMapping("/schema/column/{collection}")
     public R addSchemaColumn(@PathVariable String collection, @RequestBody SchemaColumnBo schemaColumn ) {
         Query query = Query.query(Criteria.where("collection").is(collection));
         Update update = new Update().push("columns", schemaColumn);
@@ -214,6 +215,7 @@ public class ConfigController {
      * @param schemaColumn
      * @return
      */
+    @PutMapping("/schema/column/{collection}/{fieldName}")
     public R updateSchemaColumn(@PathVariable String collection,@PathVariable String fieldName, @RequestBody SchemaColumnBo schemaColumn) {
         Query query = new Query();
         query.addCriteria(
@@ -238,6 +240,7 @@ public class ConfigController {
      * @param fieldNames
      * @return
      */
+    @DeleteMapping("/schema/column/{collection}/{fieldNames}")
     public R deleteSchemaColumn(@PathVariable String collection,@PathVariable String[] fieldNames) {
         Query query = Query.query(Criteria.where("collection").is(collection));
         // 使用预定义常量替换硬编码字符串，提高可读性和可维护性
@@ -255,6 +258,7 @@ public class ConfigController {
      * @param collection
      * @return
      */
+    @GetMapping("/schema/{collection}")
     public R<Map<String, Object>> getSchema(@PathVariable String collection) {
         Query query = Query.query(Criteria.where("collection").is(collection));
         return R.ok(toGameConfigMongoTemplate.findOne(query, Map.class, COLLECTION_NAME));
@@ -276,6 +280,7 @@ public class ConfigController {
      * @param data
      * @return
      */
+    @PostMapping("/save/{collection}")
     public R save(@PathVariable String collection, @RequestBody Map<String, Object> data) {
         toGameConfigMongoTemplate.save(data, collection);
         return R.ok();
@@ -287,6 +292,7 @@ public class ConfigController {
      * @param ids
      * @return
      */
+    @PostMapping("/delete/{collection}")
     public R delete(@PathVariable String collection, @RequestBody List<String> ids) {
         ids.forEach(id -> toGameConfigMongoTemplate.remove(Query.query(Criteria.where("_id").is(id)), collection));
         return R.ok();
